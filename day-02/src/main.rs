@@ -13,17 +13,14 @@ impl std::str::FromStr for Game {
     type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut chunks = s.split(": ");
-        let id = chunks
-            .next()
-            .ok_or(anyhow!("invalid game str: {}", s))?
-            .split(" ")
-            .nth(1)
-            .ok_or(anyhow!("invalid game str: {}", s))?
-            .parse::<u32>()?;
-        let sets = chunks
-            .next()
-            .ok_or(anyhow!("invalid game str: {}", s))?
+        let (prefix_str, sets_str) = s
+            .split_once(": ")
+            .ok_or(anyhow!("invalid game str: {}", s))?;
+        let (_, id_str) = prefix_str
+            .split_once(" ")
+            .ok_or(anyhow!("invalid game str: {}", s))?;
+        let id = id_str.parse::<u32>()?;
+        let sets = sets_str
             .split("; ")
             .map(|s| s.parse())
             .collect::<Result<Vec<Set>>>()?;
@@ -63,26 +60,15 @@ impl std::str::FromStr for Set {
             blue: 0,
         };
         for chunk in s.split(", ") {
-            if chunk.ends_with("red") {
-                set.red = chunk
-                    .split(" ")
-                    .next()
-                    .ok_or(anyhow!("invalid set str: {}", s))?
-                    .parse::<u32>()?;
-            }
-            if chunk.ends_with("green") {
-                set.green = chunk
-                    .split(" ")
-                    .next()
-                    .ok_or(anyhow!("invalid set str: {}", s))?
-                    .parse::<u32>()?;
-            }
-            if chunk.ends_with("blue") {
-                set.blue = chunk
-                    .split(" ")
-                    .next()
-                    .ok_or(anyhow!("invalid set str: {}", s))?
-                    .parse::<u32>()?;
+            let (value_str, colour) = chunk
+                .split_once(" ")
+                .ok_or(anyhow!("invalid set str: {}", s))?;
+            let value = value_str.parse::<u32>()?;
+            match colour {
+                "red" => set.red = value,
+                "green" => set.green = value,
+                "blue" => set.blue = value,
+                _ => (),
             }
         }
 
