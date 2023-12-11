@@ -5,7 +5,7 @@ use std::io::BufReader;
 
 fn main() -> Result<()> {
     let input = read_input("input.txt")?;
-    println!("{:?}", input);
+    dbg!(input);
     Ok(())
 }
 
